@@ -1,22 +1,27 @@
 trigger:
-- main
-
-pool:server
-
-stages:
-  - stage:stage1
-    jobs:
-      -deployment: 'newchangerequest'
-       environment:'newcr'
-      - job: updatechangerequest
-        steps:
-
-        - task: UpdateServiceNowChangeRequests@2
-          inputs:
-            ServiceNowConnection: 'servicenow'
-	    NewStatus: 'Assess'
-	    WorkNotes: 'sample'
- 	    otherParameters: ''
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - build-pipeline.yml
+    - release-pipeline.yml
+jobs:  
+- job: Build
+  pool:
+    name: default
+  steps:
+  - script: | 
+      echo 'do some unit test'
+    displayName: 'unit test'
+  - script: | 
+      echo 'compile application'
+    displayName: 'compile'
+  - powershell: gci env:* | sort-object name | Format-Table -AutoSize | Out-File $env:BUILD_ARTIFACTSTAGINGDIRECTORY/environment-variables.txt
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: drop1
 
 
 # # Starter pipeline
